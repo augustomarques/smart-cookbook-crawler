@@ -33,6 +33,7 @@ public class EnviaReceitaParaSmartcookbook {
         long total = receitaRepository.count();
         long num = total % 1000;
         long contador = 0;
+        String url = String.format("%s/receitas", urlSmartcookbook);
 
         log.info(String.format("Foram encontradas [%d] receitas cadastradas.", total));
 
@@ -50,19 +51,19 @@ public class EnviaReceitaParaSmartcookbook {
                     return;
                 }
 
-                cadastrarReceita(receita);
+                cadastrarReceita(receita, url);
             }
 
             contador += 1000;
         }
     }
 
-    private void cadastrarReceita(final Receita receita) {
+    private void cadastrarReceita(final Receita receita, String url) {
         try {
             log.info(String.format("Enviando receita [nome: %s]", receita.getNome()));
 
             ReceitaDTO receitaDTO = new ReceitaDTO(receita.getNome(), receita.getModoPreparo());
-            SimpleEntityDTO receitaCadastrada = restTemplate.postForObject(urlSmartcookbook,
+            SimpleEntityDTO receitaCadastrada = restTemplate.postForObject(url,
                     new HttpEntity<>(receitaDTO), SimpleEntityDTO.class);
 
             if (Objects.nonNull(receitaCadastrada)) {
@@ -71,7 +72,7 @@ public class EnviaReceitaParaSmartcookbook {
                     HttpEntity<IngredienteDTO> ingredienteRequest = new HttpEntity<>(ingredienteDTO);
 
                     SimpleEntityDTO ingredienteCadastrado = restTemplate.postForObject(String.format(
-                            "%s/%s/ingredientes", urlSmartcookbook, receitaCadastrada.id), ingredienteRequest,
+                            "%s/%s/ingredientes", url, receitaCadastrada.id), ingredienteRequest,
                             SimpleEntityDTO.class);
 
                     if (Objects.isNull(ingredienteCadastrado)) {
